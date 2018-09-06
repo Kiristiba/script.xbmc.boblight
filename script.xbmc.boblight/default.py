@@ -208,11 +208,15 @@ def run_boblight():
   player_monitor.playing = xbmc.Player().isPlaying()
   if main.startup() == 0:
     if useLegacyApi:
-      capture.capture(capture_width, capture_height, xbmc.CAPTURE_FLAG_CONTINUOUS)
+      capture.capture(settings.frame_capture_width, settings.frame_capture_height, xbmc.CAPTURE_FLAG_CONTINUOUS)
 
     while not xbmc.abortRequested:
-      xbmc.sleep(100)
+      xbmc.sleep(settings.frame_capture_interval)
       if not settings.bobdisable:
+        if not settings.is_working_time():
+          bob.bob_set_priority(255)
+          continue
+
         if not bob.bob_ping() or settings.reconnect:
           if not main.connectBoblight():
             continue
@@ -233,20 +237,44 @@ def run_boblight():
 
           if startReadOut:
             width = capture.getWidth();
+            if width == 0:
+              return
             height = capture.getHeight();
             if useLegacyApi:
               pixels = capture.getImage(1000)
 
-            bob.bob_setscanrange(width, height)
+            pxl_width = width * 4
+            range_x_min = int(width / 2 * (1 - settings.scan_range)) * 4
+            range_x_max = int(width / 2 * (1 + settings.scan_range)) * 4
+            range_y_min = int(height / 2 * (1 - settings.scan_range)) * pxl_width
+            range_y_max = int(height / 2 * (1 + settings.scan_range)) * pxl_width
+            found = False
+            for yc in range(0, int(height * settings.scan_v) * pxl_width, pxl_width):
+              for xi in range (range_x_min + yc, range_x_max + yc, 4):
+                if pixels[xi] > settings.scan_threshold or pixels[xi + 1] > settings.scan_threshold or pixels[xi + 2] > settings.scan_threshold:
+                  found = True
+                  break
+              if found:
+                break
+            yc = int(yc / pxl_width)
+            found = False
+            for xc in range(0, int(width * settings.scan_h) * 4, 4):
+              for yi in range (range_y_min + xc, range_y_max + xc , pxl_width):
+                if pixels[yi] > settings.scan_threshold or pixels[yi + 1] > settings.scan_threshold or pixels[yi + 2] > settings.scan_threshold:
+                  found = True
+                  break
+              if found:
+                break
+            xc = int(xc / 4)
+            bob.bob_setscanrange(width - xc * 2, height - yc * 2)
             rgb = (c_int * 3)()
-            for y in range(height):
-              row = width * y * 4
-              for x in range(width):
-                rgb[0] = pixels[row + x * 4 + 2]
-                rgb[1] = pixels[row + x * 4 + 1]
-                rgb[2] = pixels[row + x * 4]
-                bob.bob_addpixelxy(x, y, byref(rgb))
-
+            for y in range(yc, height - yc):
+              for x in range(xc, width - xc):
+                pxl = (y * width + x) * 4
+                rgb[0] = pixels[pxl + 2]
+                rgb[1] = pixels[pxl + 1]
+                rgb[2] = pixels[pxl]
+                bob.bob_addpixelxy(x - xc, y - yc, byref(rgb))
             bob.bob_set_priority(128)
             if not bob.bob_sendrgb():
               log("error sending values: %s" % bob.bob_geterror())

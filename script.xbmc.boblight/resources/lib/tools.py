@@ -81,8 +81,10 @@ def get_platform():
   elif  xbmc.getCondVisibility('system.platform.tvos'):
     platformstr = "tvos"
   elif  xbmc.getCondVisibility('system.platform.android'):
-    if os.uname()[4].startswith("arm") or os.uname()[4].startswith("aarch64"):
+    if os.uname()[4].startswith("arm"):
       platformstr = "android"
+    elif os.uname()[4].startswith("aarch64"):
+      platformstr = "androidarm64"
     else:
       platformstr = "androidx86"
   else:
@@ -100,13 +102,13 @@ def get_libname(platformstr):
     return "libboblight-win32.0.dll"
   elif platformstr == "win64":
     return "libboblight-win64.0.dll"
-  elif platformstr == "android" or platformstr == "androidx86":
+  elif platformstr == "android" or platformstr == 'androidarm64' or platformstr == "androidx86":
     return "libboblight.so"
   elif platformstr == "linux":
     return "libboblight.so"
 
 def get_download_path(platformstr):
-  if platformstr == "android" or platformstr == "androidx86":
+  if platformstr == "android" or platformstr == "androidarm64" or platformstr == "androidx86":
     return "/data/data/org.xbmc.kodi/files/"
   else:
     return xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib') )
@@ -114,7 +116,7 @@ def get_download_path(platformstr):
 def get_libpath(platformstr):
   if platformstr == 'linux':
     return get_libname(platformstr)
-  elif platformstr == 'android' or platformstr == 'androidx86':
+  elif platformstr == 'android' or platformstr == 'androidarm64' or platformstr == 'androidx86':
     return "/data/data/org.xbmc.kodi/files/%s" % (get_libname(platformstr),)
   elif platformstr == 'tvos':
     return "%s/system/%s" % (xbmc.translatePath("special://xbmc"),get_libname(platformstr),)

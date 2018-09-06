@@ -18,6 +18,8 @@
 '''
 
 import sys
+import datetime
+import time
 import xbmc, xbmcgui
 
 __scriptname__ = sys.modules[ "__main__" ].__scriptname__
@@ -29,6 +31,11 @@ __ID__   = sys.modules[ "__main__" ].__ID__
 
 from boblight import *
 from tools import log
+
+try:
+    throwaway = datetime.datetime.strptime('20110101','%Y%m%d')
+except TypeError:
+    throwaway = datetime.datetime(*(time.strptime('20110101','%Y%m%d')[0:6]))
 
 bob = Boblight()
 
@@ -60,6 +67,12 @@ class settings():
     self.bobdisableonscreensaver    = __addon__.getSetting("bobdisableonscreensaver") == "true"
     self.bobdisable                 = __addon__.getSetting("bobdisable") == "true"
     self.bobdisableon3d             = __addon__.getSetting("bobdisableon3d") == "true"
+    try:
+      self.enabledfrom                = datetime.datetime.strptime(__addon__.getSetting("enfrom"), '%H:%M')
+      self.enabledto                  = datetime.datetime.strptime(__addon__.getSetting("ento"), '%H:%M')
+    except TypeError:
+      self.enabledfrom                = datetime.datetime(*(time.strptime(__addon__.getSetting("enfrom"), '%H:%M:%S')[0:6]))
+      self.enabledto                  = datetime.datetime(*(time.strptime(__addon__.getSetting("ento"), '%H:%M:%S')[0:6]))
     self.current_option             = ""
     
     if not self.networkaccess:
@@ -73,6 +86,10 @@ class settings():
         self.hostip   = hostip
         self.hostport = hostport        
         self.reconnect = True
+
+    self.frame_capture_interval        = int(float(__addon__.getSetting("frame_capture_interval")))
+    self.frame_capture_width           = int(float(__addon__.getSetting("frame_capture_width")))
+    self.frame_capture_height          = int(float(__addon__.getSetting("frame_capture_height")))
     
     # Other settings
     self.other_static_bg            = __addon__.getSetting("other_static_bg") == "true"
@@ -90,6 +107,10 @@ class settings():
     self.movie_interpolation        = int(__addon__.getSetting("movie_interpolation") == "true")
     self.movie_threshold            = float(__addon__.getSetting("movie_threshold"))
     self.movie_preset               = int(__addon__.getSetting("movie_preset"))
+    self.movie_scan_v               = float(__addon__.getSetting("movie_scan_v"))
+    self.movie_scan_h               = float(__addon__.getSetting("movie_scan_h"))
+    self.movie_scan_threshold       = int(float(__addon__.getSetting("movie_scan_threshold")))
+    self.movie_scan_range           = float(__addon__.getSetting("movie_scan_range"))
 
     # TV Shows settings
     self.tvshow_saturation           = float(__addon__.getSetting("tvshow_saturation"))
@@ -99,6 +120,10 @@ class settings():
     self.tvshow_interpolation        = int(__addon__.getSetting("tvshow_interpolation") == "true")
     self.tvshow_threshold            = float(__addon__.getSetting("tvshow_threshold"))
     self.tvshow_preset               = int(__addon__.getSetting("tvshow_preset"))
+    self.tvshow_scan_v               = float(__addon__.getSetting("tvshow_scan_v"))
+    self.tvshow_scan_h               = float(__addon__.getSetting("tvshow_scan_h"))
+    self.tvshow_scan_threshold       = int(float(__addon__.getSetting("tvshow_scan_threshold")))
+    self.tvshow_scan_range           = float(__addon__.getSetting("tvshow_scan_range"))
 
     # LiveTV settings
     self.livetv_saturation           = float(__addon__.getSetting("livetv_saturation"))
@@ -108,6 +133,10 @@ class settings():
     self.livetv_interpolation        = int(__addon__.getSetting("livetv_interpolation") == "true")
     self.livetv_threshold            = float(__addon__.getSetting("livetv_threshold"))
     self.livetv_preset               = int(__addon__.getSetting("livetv_preset"))
+    self.livetv_scan_v               = float(__addon__.getSetting("livetv_scan_v"))
+    self.livetv_scan_h               = float(__addon__.getSetting("livetv_scan_h"))
+    self.livetv_scan_threshold       = int(float(__addon__.getSetting("livetv_scan_threshold")))
+    self.livetv_scan_range           = float(__addon__.getSetting("livetv_scan_range"))
 
     # Files settings
     self.files_saturation           = float(__addon__.getSetting("files_saturation"))
@@ -117,7 +146,11 @@ class settings():
     self.files_interpolation        = int(__addon__.getSetting("files_interpolation") == "true")
     self.files_threshold            = float(__addon__.getSetting("files_threshold"))
     self.files_preset               = int(__addon__.getSetting("files_preset"))
-      
+    self.files_scan_v               = float(__addon__.getSetting("files_scan_v"))
+    self.files_scan_h               = float(__addon__.getSetting("files_scan_h"))
+    self.files_scan_threshold       = int(float(__addon__.getSetting("files_scan_threshold")))
+    self.files_scan_range           = float(__addon__.getSetting("files_scan_range"))
+
     # Music Video settings
     self.music_saturation           = float(__addon__.getSetting("musicvideo_saturation"))
     self.music_value                = float(__addon__.getSetting("musicvideo_value"))
@@ -126,6 +159,10 @@ class settings():
     self.music_interpolation        = int(__addon__.getSetting("musicvideo_interpolation") == "true")
     self.music_threshold            = float(__addon__.getSetting("musicvideo_threshold"))
     self.music_preset               = int(__addon__.getSetting("musicvideo_preset"))
+    self.music_scan_v               = float(__addon__.getSetting("musicvideo_scan_v"))
+    self.music_scan_h               = float(__addon__.getSetting("musicvideo_scan_h"))
+    self.music_scan_threshold       = int(float(__addon__.getSetting("musicvideo_scan_threshold")))
+    self.music_scan_range           = float(__addon__.getSetting("musicvideo_scan_range"))
 
   def resetBobDisable(self):
     # reset the bobdisable setting from settings
@@ -155,6 +192,10 @@ class settings():
       autospeed     = 0.0 
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.movie_preset == 2:     #preset action
       saturation    = 3.0
       value         = 10.0
@@ -162,6 +203,10 @@ class settings():
       autospeed     = 0.0  
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.movie_preset == 3:     #preset disabled
       saturation    = 0.0
       value         = 0.0
@@ -169,6 +214,10 @@ class settings():
       autospeed     = 0.0  
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.movie_preset == 0:     #custom
       saturation      =  self.movie_saturation
       value           =  self.movie_value
@@ -176,6 +225,10 @@ class settings():
       autospeed       =  self.movie_autospeed
       interpolation   =  self.movie_interpolation
       threshold       =  self.movie_threshold
+      self.scan_v          =  self.movie_scan_v
+      self.scan_h          =  self.movie_scan_h
+      self.scan_threshold  =  self.movie_scan_threshold
+      self.scan_range      =  self.movie_scan_range
     return (saturation,value,speed,autospeed,interpolation,threshold)
 
   #handle boblight configuration from the "TVShows" category
@@ -190,6 +243,10 @@ class settings():
       autospeed     = 0.0 
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.tvshow_preset == 2:     #preset action
       saturation    = 3.0
       value         = 10.0
@@ -197,6 +254,10 @@ class settings():
       autospeed     = 0.0  
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.tvshow_preset == 3:     #preset disabled
       saturation    = 0.0
       value         = 0.0
@@ -204,6 +265,10 @@ class settings():
       autospeed     = 0.0  
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.tvshow_preset == 0:     #custom
       saturation      =  self.tvshow_saturation
       value           =  self.tvshow_value
@@ -211,6 +276,10 @@ class settings():
       autospeed       =  self.tvshow_autospeed
       interpolation   =  self.tvshow_interpolation
       threshold       =  self.tvshow_threshold
+      self.scan_v          =  self.tvshow_scan_v
+      self.scan_h          =  self.tvshow_scan_h
+      self.scan_threshold  =  self.tvshow_scan_threshold
+      self.scan_range      =  self.tvshow_scan_range
     return (saturation,value,speed,autospeed,interpolation,threshold)
 
   #handle boblight configuration from the "LiveTV" category
@@ -225,6 +294,10 @@ class settings():
       autospeed     = 0.0 
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.livetv_preset == 2:     #preset action 
       saturation    = 3.0
       value         = 10.0
@@ -232,6 +305,10 @@ class settings():
       autospeed     = 0.0  
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.livetv_preset == 3:     #preset disabled
       saturation    = 0.0
       value         = 0.0
@@ -239,6 +316,10 @@ class settings():
       autospeed     = 0.0  
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.livetv_preset == 0:     #custom
       saturation      =  self.livetv_saturation
       value           =  self.livetv_value
@@ -246,6 +327,10 @@ class settings():
       autospeed       =  self.livetv_autospeed
       interpolation   =  self.livetv_interpolation
       threshold       =  self.livetv_threshold
+      self.scan_v          =  self.livetv_scan_v
+      self.scan_h          =  self.livetv_scan_h
+      self.scan_threshold  =  self.livetv_scan_threshold
+      self.scan_range      =  self.livetv_scan_range
     return (saturation,value,speed,autospeed,interpolation,threshold)
 
   #handle boblight configuration from the "files" category
@@ -260,6 +345,10 @@ class settings():
       autospeed     = 0.0 
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.files_preset == 2:     #preset action
       saturation    = 3.0
       value         = 10.0
@@ -267,6 +356,10 @@ class settings():
       autospeed     = 0.0  
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.files_preset == 3:     #preset disabled
       saturation    = 0.0
       value         = 0.0
@@ -274,6 +367,10 @@ class settings():
       autospeed     = 0.0  
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.files_preset == 0:     #custom
       saturation      =  self.files_saturation
       value           =  self.files_value
@@ -281,6 +378,10 @@ class settings():
       autospeed       =  self.files_autospeed
       interpolation   =  self.files_interpolation
       threshold       =  self.files_threshold
+      self.scan_v          =  self.files_scan_v
+      self.scan_h          =  self.files_scan_h
+      self.scan_threshold  =  self.files_scan_threshold
+      self.scan_range      =  self.files_scan_range
     return (saturation,value,speed,autospeed,interpolation,threshold)
     
   #handle boblight configuration from the "MusicVideo" category
@@ -295,6 +396,10 @@ class settings():
       autospeed     = 0.0
       interpolation = 1
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.music_preset == 2:     #preset Rock
       saturation    = 3.0
       value         = 10.0
@@ -302,6 +407,10 @@ class settings():
       autospeed     = 0.0  
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.music_preset == 3:     #preset disabled
       saturation    = 0.0
       value         = 0.0
@@ -309,6 +418,10 @@ class settings():
       autospeed     = 0.0  
       interpolation = 0
       threshold     = 0.0
+      self.scan_v          =  0.0
+      self.scan_h          =  0.0
+      self.scan_threshold  =  0
+      self.scan_range      =  0.0
     elif self.music_preset == 0:     #custom
       saturation      =  self.music_saturation
       value           =  self.music_value
@@ -316,6 +429,10 @@ class settings():
       autospeed       =  self.music_autospeed
       interpolation   =  self.music_interpolation
       threshold       =  self.music_threshold    
+      self.scan_v          =  self.music_scan_v
+      self.scan_h          =  self.music_scan_h
+      self.scan_threshold  =  self.music_scan_threshold
+      self.scan_range      =  self.music_scan_range
     return (saturation,value,speed,autospeed,interpolation,threshold)
   
   #handle boblight configuration from the "other" category
@@ -329,6 +446,10 @@ class settings():
   #  autospeed       =  float(__addon__.getSetting("other_autospeed"))
   #  interpolation   =  __addon__.getSetting("other_interpolation") == "true"
   #  threshold       =  float(__addon__.getSetting("other_threshold"))
+    self.scan_v          =  0.0
+    self.scan_h          =  0.0
+    self.scan_threshold  =  0
+    self.scan_range      =  0.0
     return self.setupForStatic()
   
   #handle boblight configuration for static lights
@@ -341,6 +462,10 @@ class settings():
     autospeed     = 0.0 
     interpolation = 1
     threshold     = 0.0
+    self.scan_v          =  0.0
+    self.scan_h          =  0.0
+    self.scan_threshold  =  0
+    self.scan_range      =  0.0
     return (saturation,value,speed,autospeed,interpolation,threshold)
 
   #handle all settings according to the static bg light
@@ -423,3 +548,26 @@ class settings():
       self.run_init = False
       xbmc.sleep(500)
     return True  
+
+  def is_working_time(self):
+
+  #If from and do are the same then it is always enabled
+    if self.enabledfrom == self.enabledto:
+      return True
+
+  #Get current time
+    tmNow  = datetime.datetime.now()
+
+  #Adjust current time to match with from and to
+    tmFrom = self.enabledfrom.replace(year = tmNow.year, month = tmNow.month, day = tmNow.day)
+    tmTo   = self.enabledto.replace(year = tmNow.year, month = tmNow.month, day = tmNow.day)
+
+  #Compare
+    if tmTo < tmFrom:
+      return (tmNow >= tmFrom or tmNow <= tmTo)
+
+    if tmTo > tmFrom:
+      return (tmNow >= tmFrom and tmNow <= tmTo)
+
+  #Impossible
+    return False

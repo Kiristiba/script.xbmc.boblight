@@ -5,6 +5,8 @@ For accessing the settings during video playback just put the file script.xbmc.b
 You can access the settings during playback by hitting the key "b" or "B". (Note: a former keymapping to that key will be overwritten by this keymap file. If there is a 
 conflict you just can change the mapped key to something else).
 
+Black Bar Detection searches for black areas in letterboxed/pillarboxed material and removes them. The vertical scan is performed in the top lines of the screen until a non black pixel is found or the maximum vertical scan area is reached. For each line only a centered range is scanned. With this option scans can be accelerated and also unwanted parts of the screens, e.g. with TV-logos, can be hidden. The analogue scan is performed from the left side. A threshold for black pixels could be defined. For optimizing performance and result the captured frame size and interval for scanning could be set. Capture dimensions relating to your led dimensions may be a good choice.
+
 For this addon to be working you need a library for communicating with the boblightd - daemon. You can download it here:
 
 Windows:

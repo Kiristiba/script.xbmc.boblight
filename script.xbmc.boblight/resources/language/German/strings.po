@@ -44,6 +44,18 @@ msgctxt "#32106"
 msgid "Category"
 msgstr "Kategorie"
 
+msgctxt "#32107"
+msgid "Disable for 3D content"
+msgstr "Bei 3D Inhalten abschalten"
+
+msgctxt "#32108"
+msgid "When enabled, active starting at"
+msgstr "Wenn aktiviert, starte um"
+
+msgctxt "#32109"
+msgid "When enabled, active until"
+msgstr "Wenn aktiviert, stoppe um"
+
 msgctxt "#32200"
 msgid "Movie"
 msgstr "Film"

@@ -52,7 +52,15 @@ msgctxt "#32107"
 msgid "Disable for 3D content"
 msgstr ""
 
-#empty strings from id 32108 to 32199
+msgctxt "#32108"
+msgid "When enabled, active starting at"
+msgstr ""
+
+msgctxt "#32109"
+msgid "When enabled, active until"
+msgstr ""
+
+#empty strings from id 32109 to 32199
 #Movie/MusicVideo/Other
 
 msgctxt "#32200"
@@ -85,6 +93,34 @@ msgstr ""
 
 msgctxt "#32207"
 msgid "Threshold"
+msgstr ""
+
+msgctxt "#32208"
+msgid "Black Bars H-Size"
+msgstr ""
+
+msgctxt "#32209"
+msgid "Black Bars V-Size"
+msgstr ""
+
+msgctxt "#32210"
+msgid "Black Bars Threshold"
+msgstr ""
+
+msgctxt "#32211"
+msgid "Black Bars Scan Range"
+msgstr ""
+
+msgctxt "#32212"
+msgid "Frame Capture Interval"
+msgstr ""
+
+msgctxt "#32213"
+msgid "Frame Capture Width"
+msgstr ""
+
+msgctxt "#32214"
+msgid "Frame Capture Height"
 msgstr ""
 
 #empty strings from id 32208 to 32219
